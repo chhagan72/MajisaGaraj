@@ -8,7 +8,7 @@ const NotificationCenter = ({ roleContext, userIdContext }) => {
     const fetchNotifications = useCallback(async () => {
         if (!targetRecipient) return;
         try {
-            const res = await axios.get(`http://localhost:5000/api/services/notifications/${targetRecipient}`);
+            const res = await axios.get(`/api/services/notifications/${targetRecipient}`);
             setLogs(res.data);
         } catch (err) {
             console.error("Failed to parse notifications.", err);
@@ -23,16 +23,7 @@ const NotificationCenter = ({ roleContext, userIdContext }) => {
 
     const handleReadClick = async (id) => {
         try {
-            await axios.put(`http://localhost:5000/api/services/notifications/read/${id}`);
-            fetchNotifications();
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const handleClearAllClick = async () => {
-        try {
-            await axios.delete(`http://localhost:5000/api/services/notifications/clear/${targetRecipient}`);
+            await axios.put(`/api/services/notifications/clear/${targetRecipient}`);
             setLogs([]);
         } catch (err) {
             console.error(err);
