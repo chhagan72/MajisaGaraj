@@ -76,7 +76,7 @@ const AdminHome = () => {
                                 <div className="col-12 col-md-4">
                                     <div className="metric-panel-card p-4">
                                         <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
-                                            <span className="text-muted small font-monospace">01 // REPAIR ACCUMULATION</span>
+                                            <span className="text-muted small font-monospace">01 REPAIR ACCUMULATION</span>
                                             <span className="card-icon-badge text-cyan-icon">🔧</span>
                                         </div>
                                         <h2 className="fw-bold value-display m-0">42 Operations</h2>
@@ -86,7 +86,7 @@ const AdminHome = () => {
                                 <div className="col-12 col-md-4">
                                     <div className="metric-panel-card p-4">
                                         <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
-                                            <span className="text-muted small font-monospace">02 // PENDING QUEUES</span>
+                                            <span className="text-muted small font-monospace">02 PENDING QUEUES</span>
                                             <span className="card-icon-badge text-danger-icon">⏳</span>
                                         </div>
                                         <h2 className="fw-bold value-display m-0">8 Slots Open</h2>
@@ -96,7 +96,7 @@ const AdminHome = () => {
                                 <div className="col-12 col-md-4">
                                     <div className="metric-panel-card p-4">
                                         <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
-                                            <span className="text-muted small font-monospace">03 // STAFF ALLOCATION</span>
+                                            <span className="text-muted small font-monospace">03 STAFF ALLOCATION</span>
                                             <span className="card-icon-badge text-emerald-icon">👥</span>
                                         </div>
                                         <h2 className="fw-bold value-display m-0">5 On Floor</h2>

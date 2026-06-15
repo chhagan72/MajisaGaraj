@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import html2pdf from 'html2pdf.js';
 import '../css/TwoWheelerCare.css';
 
 const TwoWheelerCare = () => {
-    /* Track authenticated profile state parameters strictly inside the user isolated tab key spaces */
     const user = JSON.parse(localStorage.getItem('user_data')) || { id: '' };
     const [slots, setSlots] = useState(15);
     const [history, setHistory] = useState([]);
@@ -21,17 +21,14 @@ const TwoWheelerCare = () => {
         "Brake Pads", "Spark Plug", "Engine Oil Filter", "Drive Chain Link", "Air Filter Element", "Clutch Cable"
     ];
 
-    // Sync Telemetry Slot Configurations Metrics
     const fetchDashboardData = async () => {
         try {
-            // const slotRes = await axios.get('/api/services/slots');
             const slotRes = await axios.get('http://localhost:5000/api/services/slots');
             setSlots(slotRes.data.bikeSlots);
 
             if (user.id || user._id) {
                 const targetId = user.id || user._id;
                 const historyRes = await axios.get(`http://localhost:5000/api/services/user/${targetId}`);
-                // const historyRes = await axios.get(`/api/services/user/${targetId}`);
                 setHistory(historyRes.data);
             }
         } catch (err) {
@@ -41,7 +38,6 @@ const TwoWheelerCare = () => {
 
     useEffect(() => {
         fetchDashboardData();
-        // Added auto-refresh polling loop matching admin workspace intervals
         const syncTimerNode = setInterval(fetchDashboardData, 7000);
         return () => clearInterval(syncTimerNode);
     }, []);
@@ -61,17 +57,11 @@ const TwoWheelerCare = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            const payload = { 
-                userId: user.id || user._id, 
-                ...form 
-            };
-
-            // const res = await axios.post('/api/services/book', payload);
+            const payload = { userId: user.id || user._id, ...form };
             const res = await axios.post('http://localhost:5000/api/services/book', payload);
-            
             setMessage({ type: 'success', text: res.data.message || 'Maintenance booking dispatched successfully!' });
             setForm({ bikeModel: '', registrationNumber: '', serviceType: 'Routine Tune-Up', partsToReplace: [] });
-            fetchDashboardData(); // Re-trigger telemetry data updates
+            fetchDashboardData(); 
         } catch (err) {
             setMessage({ type: 'danger', text: err.response?.data?.message || 'Transaction rejected by server node.' });
         } finally {
@@ -79,9 +69,104 @@ const TwoWheelerCare = () => {
         }
     };
 
+    // Client-Side Multiple Product PDF Generation Execution Node
+    const downloadInvoicePDF = (job) => {
+        if (!job.invoice) {
+            alert("No compiled invoice datasets mapped to this finalized timeline loop index reference.");
+            return;
+        }
+
+        const inv = job.invoice;
+        const baseLaborAmount = parseFloat(inv.baseServiceAmount || 0);
+        
+        // Loop and reduce products array to compute totals inside template
+        const productsTotal = (inv.products || []).reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+        const subtotalGross = baseLaborAmount + productsTotal;
+
+        // Build HTML table rows for variable items array elements
+        const partsRowsHtml = (inv.products || [])
+            .filter(p => p.name.trim() !== '')
+            .map(p => `
+                <tr>
+                    <td style="padding: 8px 0; color: #555;">🔧 Component Part: ${p.name}</td>
+                    <td style="padding: 8px 0; text-align: right; color: #555;">₹${parseFloat(p.amount).toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+        const elementString = `
+            <div style="padding: 40px; font-family: 'Courier New', Courier, monospace; color: #333; line-height: 1.5; background: #fff;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="margin: 0; font-weight: bold; letter-spacing: 2px; color: #111;">MAJISA GARAGE</h1>
+                    <p style="margin: 5px 0; font-size: 14px; text-transform: uppercase;">Premium Two-Wheeler Care Station</p>
+                </div>
+                
+                <div style="margin-bottom: 15px; font-size: 13px;">
+                    <strong>Admin Name:</strong> ${inv.adminName}<br/>
+                    <strong>Admin Email:</strong> ${inv.adminEmail}<br/>
+                    <strong>Admin Mobile Number:</strong> ${inv.adminMobile}<br/>
+                    <strong>Address:</strong> ${inv.address}
+                </div>
+
+                <div style="border-bottom: 2px solid #000; margin-bottom: 20px;"></div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #000; text-align: left;">
+                            <th style="padding: 8px 0;">Item Description / Field Parameters</th>
+                            <th style="padding: 8px 0; text-align: right;">Amount Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px 0;"><strong>Vehicle Model:</strong> ${job.bikeModel} [Reg No: ${job.registrationNumber}]</td>
+                            <td style="padding: 8px 0; text-align: right;">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0;"><strong>Service Required Base:</strong> ${job.serviceType}</td>
+                            <td style="padding: 8px 0; text-align: right;">₹${baseLaborAmount.toFixed(2)}</td>
+                        </tr>
+                        ${partsRowsHtml}
+                    </tbody>
+                </table>
+
+                <div style="border-bottom: 1px dashed #000; margin-bottom: 15px;"></div>
+
+                <div style="text-align: right; font-size: 14px; margin-bottom: 20px;">
+                    <p style="margin: 4px 0;">Gross Amount (Subtotal): ₹${subtotalGross.toFixed(2)}</p>
+                    <p style="margin: 4px 0; color: red;">Discount Given: -₹${parseFloat(inv.discount || 0).toFixed(2)}</p>
+                    <div style="border-top: 1px solid #000; display: inline-block; width: 270px; margin-top: 5px; padding-top: 5px;">
+                        <strong>Total Final Bill Amount: ₹${parseFloat(inv.totalAmount).toFixed(2)}</strong>
+                    </div>
+                </div>
+
+                <div style="border-bottom: 2px solid #000; margin-bottom: 30px;"></div>
+
+                <div style="margin-top: 60px; font-size: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <p style="margin: 0; font-weight: bold;">Thank you for trusting Majisa Garage!</p>
+                        <p style="margin: 3px 0; color: #666;">Automated Invoicing Log Generation: ${new Date(inv.generatedAt).toLocaleString()}</p>
+                    </div>
+                    <div style="text-align: center; width: 200px; border-top: 1px solid #333; padding-top: 5px;">
+                        <span style="font-style: italic; display: block; margin-bottom: 2px;">${inv.adminName}</span>
+                        <strong>Authorized Signature</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const opt = {
+            margin:       0.5,
+            filename:     `Invoice_${job.registrationNumber}_${job._id.slice(-6)}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        html2pdf().from(elementString).set(opt).save();
+    };
+
     return (
         <div className="container-fluid p-0 animate-fade-in">
-            {/* Slot Matrix Indicator Bar - Light Elevation Profile */}
             <div className="row g-4 mb-4">
                 <div className="col-12">
                     <div className="slots-banner-panel p-4 d-flex align-items-center justify-content-between">
@@ -98,7 +183,6 @@ const TwoWheelerCare = () => {
             </div>
 
             <div className="row g-4">
-                {/* Request Form Portal Deck */}
                 <div className="col-12 col-xl-5">
                     <div className="card booking-form-card p-4 border-0">
                         <h5 className="fw-bold text-dark font-monospace mb-4 text-uppercase tracking-wider"> Request Dispatch Form</h5>
@@ -155,7 +239,6 @@ const TwoWheelerCare = () => {
                     </div>
                 </div>
 
-                {/* Pipeline Management Tracking Panel */}
                 <div className="col-12 col-xl-7">
                     <div className="card pipeline-tracking-card p-4 border-0">
                         <h5 className="fw-bold text-dark font-monospace mb-4 text-uppercase tracking-wider"> Real-Time Maintenance Pipeline</h5>
@@ -168,7 +251,7 @@ const TwoWheelerCare = () => {
                         ) : (
                             <div className="d-flex flex-column gap-3">
                                 {history.map((job) => (
-                                    <div className="pipeline-row-item p-3" key={job._id}>
+                                    <div className="pipeline-row-item p-3 bg-white border rounded shadow-sm" key={job._id}>
                                         <div className="d-flex align-items-center justify-content-between gap-3">
                                             <div>
                                                 <h5 className="m-0 fw-bold text-dark">{job.bikeModel}</h5>
@@ -176,14 +259,23 @@ const TwoWheelerCare = () => {
                                                     {job.registrationNumber} &bull; {job.serviceType}
                                                 </span>
                                             </div>
-                                            <div className="text-end">
+                                            <div className="text-end d-flex flex-column align-items-end gap-2">
                                                 <span className={`status-pill phase-${job.status.toLowerCase().replace(/ /g, '-')}`}>
                                                     {job.status.toUpperCase()}
                                                 </span>
+                                                
+                                                {job.status === 'Done' && job.invoice && (
+                                                    <button 
+                                                        onClick={() => downloadInvoicePDF(job)} 
+                                                        className="btn btn-sm btn-outline-primary py-0.5 px-2 rounded font-monospace small"
+                                                        style={{ fontSize: '11px' }}
+                                                    >
+                                                        📥 Download PDF Invoice
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
 
-                                        {/* Dynamic Component Breakdown Array Tray */}
                                         {job.partsToReplace.length > 0 && (
                                             <div className="parts-breakdown-tray mt-3 pt-2">
                                                 <span className="text-secondary tiny font-monospace d-block fw-bold mb-1">REPLACEMENT REPAIR STACK:</span>
@@ -195,9 +287,8 @@ const TwoWheelerCare = () => {
                                             </div>
                                         )}
 
-                                        {/* Administration Output Notes Element */}
                                         {job.adminNotes && (
-                                            <div className="admin-remarks-tray mt-2 p-2.5">
+                                            <div className="admin-remarks-tray mt-2 p-2">
                                                 <span className="font-monospace small text-dark d-block">
                                                     <strong className="text-warning">🔧 Remarks:</strong> {job.adminNotes}
                                                 </span>
