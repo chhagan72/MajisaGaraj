@@ -11,8 +11,8 @@ const AdminBikeService = () => {
         setLoading(true);
         try {
             // Fetching requests via matching backend mapping
-            // const res = await axios.get('http://localhost:5000/api/services/all'); 
-            const res = await axios.get('/api/services/all'); 
+            const res = await axios.get('http://localhost:5000/api/services/all'); 
+            // const res = await axios.get('/api/services/all'); 
             setBikeJobs(res.data);
         } catch (err) {
             console.error("Failed to read system bike logs.", err);
@@ -32,7 +32,8 @@ const AdminBikeService = () => {
         e.preventDefault();
         try {
             /* FIXED PATH: Maps exactly to router.put('/update/:id') endpoint */
-            await axios.put(`/api/services/update/${id}`, statusForm);
+            await axios.put(`http://localhost:5000/api/services/update/${id}`, statusForm);
+            // await axios.put(`/api/services/update/${id}`, statusForm);
             setUpdatingJob(null);
             setStatusForm({ status: 'In Progress', adminNotes: '' });
             fetchAllBikeServiceRequests(); 

@@ -80,7 +80,9 @@ npm install bootstrap react-bootstrap react-router-dom axios lucide-react
 
 
 
-**** implimantation,Configuration,Version controlling, deployment wth cicd, management, monitoring, Error heandling
+**** instalation, implimantation,Configuration,Version controlling, deployment wth cicd, management, monitoring, Error heandling
+
+
 This production-ready, step-by-step DevOps guide covers containerizing your React (Vite) and Node.js (Express) application, pushing it to GitHub, setting up an AWS EC2 instance, building an automated Jenkins CI/CD pipeline integrated with SonarQube for static analysis, and configuring full system monitoring with Prometheus and Grafana.
 
 🏗️ Architecture Overview

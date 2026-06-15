@@ -30,7 +30,8 @@ const Register = () => {
 
         setLoading(true);
         try {
-            const res = await axios.post('/api/auth/register', formData);
+            // const res = await axios.post('/api/auth/register', formData);
+            const res = await axios.post('http://localhost:5000/api/auth/register', formData);
             setSuccess(res.data.message || 'Registration successful! Opening session portal...');
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {
