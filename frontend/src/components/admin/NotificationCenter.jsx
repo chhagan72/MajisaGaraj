@@ -9,7 +9,6 @@ const NotificationCenter = ({ roleContext, userIdContext }) => {
         if (!targetRecipient) return;
         try {
             const res = await axios.get(`http://localhost:5000/api/services/notifications/${targetRecipient}`);
-            // const res = await axios.get(`/api/services/notifications/${targetRecipient}`);
             setLogs(res.data);
         } catch (err) {
             console.error("Failed to parse notifications.", err);
@@ -18,17 +17,29 @@ const NotificationCenter = ({ roleContext, userIdContext }) => {
 
     useEffect(() => {
         fetchNotifications();
-        const pollTimer = setInterval(fetchNotifications, 5000); // Polling aligned to 5 seconds for rapid matching
+        const pollTimer = setInterval(fetchNotifications, 5000); 
         return () => clearInterval(pollTimer);
     }, [fetchNotifications]);
 
-    const handleReadClick = async (id) => {
+    // FIX 1: Defined handleClearAllClick to empty out logs via API
+    const handleClearAllClick = async () => {
         try {
             await axios.put(`http://localhost:5000/api/services/notifications/clear/${targetRecipient}`);
-            // await axios.put(`/api/services/notifications/clear/${targetRecipient}`);
             setLogs([]);
         } catch (err) {
-            console.error(err);
+            console.error("Failed to clear logs", err);
+        }
+    };
+
+    // OPTIONAL FIX: If your backend has an individual mark-as-read endpoint, route it here:
+    const handleReadClick = async (id) => {
+        try {
+            // Replace with your specific individual update route if available, e.g., `/api/services/notifications/read/${id}`
+            await axios.put(`http://localhost:5000/api/services/notifications/read/${id}`);
+            // Optimistically update UI local state
+            setLogs(prevLogs => prevLogs.map(log => log._id === id ? { ...log, isRead: true } : log));
+        } catch (err) {
+            console.error("Failed to mark single log as read", err);
         }
     };
 
