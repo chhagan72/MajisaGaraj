@@ -69,7 +69,6 @@ const TwoWheelerCare = () => {
         }
     };
 
-    // Client-Side Multiple Product PDF Generation Execution Node
     const downloadInvoicePDF = (job) => {
         if (!job.invoice) {
             alert("No compiled invoice datasets mapped to this finalized timeline loop index reference.");
@@ -78,18 +77,18 @@ const TwoWheelerCare = () => {
 
         const inv = job.invoice;
         const baseLaborAmount = parseFloat(inv.baseServiceAmount || 0);
-        
-        // Loop and reduce products array to compute totals inside template
         const productsTotal = (inv.products || []).reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-        const subtotalGross = baseLaborAmount + productsTotal;
+        
+        const grossTotal = baseLaborAmount + productsTotal;
+        const discountAmount = parseFloat(inv.discount || 0);
+        const finalPayableTotal = parseFloat(inv.totalAmount || (grossTotal - discountAmount));
 
-        // Build HTML table rows for variable items array elements
         const partsRowsHtml = (inv.products || [])
-            .filter(p => p.name.trim() !== '')
+            .filter(p => p.name && p.name.trim() !== '')
             .map(p => `
                 <tr>
-                    <td style="padding: 8px 0; color: #555;">🔧 Component Part: ${p.name}</td>
-                    <td style="padding: 8px 0; text-align: right; color: #555;">₹${parseFloat(p.amount).toFixed(2)}</td>
+                    <td style="padding: 8px 0; color: #555; border-bottom: 1px dashed #eee;">🔧 Component Part: ${p.name}</td>
+                    <td style="padding: 8px 0; text-align: right; color: #555; border-bottom: 1px dashed #eee;">₹${parseFloat(p.amount).toFixed(2)}</td>
                 </tr>
             `).join('');
 
@@ -118,12 +117,12 @@ const TwoWheelerCare = () => {
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="padding: 8px 0;"><strong>Vehicle Model:</strong> ${job.bikeModel} [Reg No: ${job.registrationNumber}]</td>
-                            <td style="padding: 8px 0; text-align: right;">-</td>
+                            <td style="padding: 8px 0; border-bottom: 1px dashed #eee;"><strong>Vehicle Model:</strong> ${job.bikeModel} [Reg No: ${job.registrationNumber}]</td>
+                            <td style="padding: 8px 0; text-align: right; border-bottom: 1px dashed #eee;">-</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px 0;"><strong>Service Required Base:</strong> ${job.serviceType}</td>
-                            <td style="padding: 8px 0; text-align: right;">₹${baseLaborAmount.toFixed(2)}</td>
+                            <td style="padding: 8px 0; border-bottom: 1px dashed #eee;"><strong>Service Required Base:</strong> ${job.serviceType}</td>
+                            <td style="padding: 8px 0; text-align: right; border-bottom: 1px dashed #eee;">₹${baseLaborAmount.toFixed(2)}</td>
                         </tr>
                         ${partsRowsHtml}
                     </tbody>
@@ -131,11 +130,11 @@ const TwoWheelerCare = () => {
 
                 <div style="border-bottom: 1px dashed #000; margin-bottom: 15px;"></div>
 
-                <div style="text-align: right; font-size: 14px; margin-bottom: 20px;">
-                    <p style="margin: 4px 0;">Gross Amount (Subtotal): ₹${subtotalGross.toFixed(2)}</p>
-                    <p style="margin: 4px 0; color: red;">Discount Given: -₹${parseFloat(inv.discount || 0).toFixed(2)}</p>
-                    <div style="border-top: 1px solid #000; display: inline-block; width: 270px; margin-top: 5px; padding-top: 5px;">
-                        <strong>Total Final Bill Amount: ₹${parseFloat(inv.totalAmount).toFixed(2)}</strong>
+                <div style="text-align: right; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
+                    <p style="margin: 2px 0;">Gross Total Amount: ₹${grossTotal.toFixed(2)}</p>
+                    <p style="margin: 2px 0; color: red;">Discount Given (10% Auto): -₹${discountAmount.toFixed(2)}</p>
+                    <div style="border-top: 1px solid #000; display: inline-block; width: 290px; margin-top: 5px; padding-top: 5px;">
+                        <strong>Total Final Bill Amount: ₹${finalPayableTotal.toFixed(2)}</strong>
                     </div>
                 </div>
 

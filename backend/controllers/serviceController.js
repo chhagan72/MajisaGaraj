@@ -201,12 +201,12 @@ exports.updateJobStatus = async (req, res) => {
 
                             <div style="border-bottom: 2px solid #000; margin-bottom: 25px;"></div>
 
-                            <div style="font-size: 12px; display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px;">
+                           <div style="margin-top: 60px; font-size: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
                                 <div>
-                                    <p style="margin: 0; font-weight: bold;">Thank you for your business!</p>
-                                    <p style="margin: 2px 0; color: #777; font-size: 10px;">Generated on: ${new Date(invoice.generatedAt).toLocaleString()}</p>
+                                    <p style="margin: 0; font-weight: bold;">Thank you for trusting Majisa Garage!</p>
+                                    <p style="margin: 2px 0; color: #777; font-size: 10px;">Automated Invoicing Log Generation: ${new Date(invoice.generatedAt).toLocaleString()}</p>
                                 </div>
-                                <div style="text-align: center; border-top: 1px solid #333; width: 160px; padding-top: 4px; font-size: 11px;">
+                               <div style="text-align: center; width: 200px; border-top: 1px solid #333; padding-top: 5px;">
                                     <span style="font-style: italic; display: block;">${invoice.adminName}</span>
                                     <strong>Authorized Signature</strong>
                                 </div>

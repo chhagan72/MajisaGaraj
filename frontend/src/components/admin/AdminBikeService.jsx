@@ -6,10 +6,12 @@ const AdminBikeService = () => {
     const [updatingJob, setUpdatingJob] = useState(null);
     const [statusForm, setStatusForm] = useState({ status: 'In Progress', adminNotes: '' });
     const [loading, setLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false); // Dynamic state tracker for loading animation
 
     // Invoice Form State
     const [showInvoiceForm, setShowInvoiceForm] = useState(false);
     const [selectedJobData, setSelectedJobData] = useState(null);
+    const [invoiceTotals, setInvoiceTotal] = useState({ grossTotal: 0, discount: 0, finalTotal: 0 });
     const [invoiceForm, setInvoiceForm] = useState({
         adminName: 'Durgesh Kumawat',
         adminEmail: 'durgeshkumawat1212@gmail.com',
@@ -19,6 +21,31 @@ const AdminBikeService = () => {
         products: [{ name: '', amount: '0' }], // Dynamic product items stack array
         discount: '0'
     });
+
+    // Automatically calculate Gross Total, 10% Discount, and Final Total in real-time
+    useEffect(() => {
+        if (showInvoiceForm) {
+            const baseLabor = parseFloat(invoiceForm.baseServiceAmount) || 0;
+            const itemsTotal = invoiceForm.products.reduce((acc, curr) => {
+                return acc + (parseFloat(curr.amount) || 0);
+            }, 0);
+
+            const calculatedGross = baseLabor + itemsTotal;
+            const calculatedDiscount = calculatedGross * 0.10;
+            const calculatedFinal = calculatedGross - calculatedDiscount;
+
+            setInvoiceTotal({
+                grossTotal: calculatedGross.toFixed(2),
+                discount: calculatedDiscount.toFixed(2),
+                finalTotal: calculatedFinal.toFixed(2)
+            });
+
+            setInvoiceForm(prev => ({
+                ...prev,
+                discount: calculatedDiscount.toFixed(2)
+            }));
+        }
+    }, [invoiceForm.baseServiceAmount, invoiceForm.products, showInvoiceForm]);
 
     const fetchAllBikeServiceRequests = async () => {
         setLoading(true);
@@ -44,11 +71,21 @@ const AdminBikeService = () => {
 
         if (nextStatus === 'Done') {
             setSelectedJobData(job);
-            const standardRate = job.serviceType === 'Full Servicing' ? '3500' : job.serviceType === 'Engine Overhaul' ? '2500' : '3500';
+            const standardRate = job.serviceType === 'Full Servicing' ? '5500' : job.serviceType === 'Engine Overhaul' ? '2500' : '3500';
+            
+            // AUTOMATIC MAPPING: Auto-populate invoice parts fields based on user selected components options
+            let mappedProducts = [{ name: '', amount: '0' }];
+            if (job.partsToReplace && job.partsToReplace.length > 0) {
+                mappedProducts = job.partsToReplace.map(part => ({
+                    name: part,
+                    amount: '550' // Base default component price parameters
+                }));
+            }
+
             setInvoiceForm(prev => ({
                 ...prev,
                 baseServiceAmount: standardRate,
-                products: [{ name: '', amount: '0' }], // Reset items loop container 
+                products: mappedProducts, 
                 discount: '0'
             }));
             setShowInvoiceForm(true);
@@ -57,7 +94,6 @@ const AdminBikeService = () => {
         }
     };
 
-    // Row management: Append empty values to form arrays
     const handleAddProductRow = () => {
         setInvoiceForm({
             ...invoiceForm,
@@ -65,13 +101,11 @@ const AdminBikeService = () => {
         });
     };
 
-    // Row management: Remove item line item from array loop matrix index
     const handleRemoveProductRow = (index) => {
         const updatedProducts = invoiceForm.products.filter((_, idx) => idx !== index);
         setInvoiceForm({ ...invoiceForm, products: updatedProducts });
     };
 
-    // Row management: Update targeted input values dynamically
     const handleProductRowChange = (index, field, value) => {
         const updatedProducts = [...invoiceForm.products];
         updatedProducts[index][field] = value;
@@ -80,23 +114,14 @@ const AdminBikeService = () => {
 
     const handleUpdateStatusSubmit = async (e, id) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             let finalPayload = { ...statusForm };
 
             if (statusForm.status === 'Done' && selectedJobData) {
-                const base = parseFloat(invoiceForm.baseServiceAmount) || 0;
-                const disc = parseFloat(invoiceForm.discount) || 0;
-                
-                // Calculate dynamic items amount total
-                const productsTotal = invoiceForm.products.reduce((acc, curr) => {
-                    return acc + (parseFloat(curr.amount) || 0);
-                }, 0);
-
-                const totalCalculated = (base + productsTotal) - disc;
-
                 finalPayload.invoice = {
                     ...invoiceForm,
-                    totalAmount: totalCalculated,
+                    totalAmount: invoiceTotals.finalTotal,
                     generatedAt: new Date().toISOString()
                 };
             }
@@ -109,6 +134,8 @@ const AdminBikeService = () => {
             fetchAllBikeServiceRequests(); 
         } catch (err) {
             alert(err.response?.data?.message || "Failed to commit operational state transformation.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -145,7 +172,18 @@ const AdminBikeService = () => {
                                     <tr key={job._id}>
                                         <td className="fw-bold">{job.bikeModel}</td>
                                         <td className="font-monospace text-secondary">{job.registrationNumber}</td>
-                                        <td>{job.serviceType}</td>
+                                        <td>
+                                            <div>{job.serviceType}</div>
+                                            {job.partsToReplace && job.partsToReplace.length > 0 && (
+                                                <div className="mt-1 d-flex flex-wrap gap-1">
+                                                    {job.partsToReplace.map((part, idx) => (
+                                                        <span key={idx} className="badge bg-light text-dark border text-truncate font-monospace" style={{ fontSize: '10px' }}>
+                                                            ⚙️ {part}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </td>
                                         <td>
                                             <span className={`status-pill phase-${job.status.toLowerCase().replace(/ /g, '-')}`}>
                                                 {job.status.toUpperCase()}
@@ -160,6 +198,7 @@ const AdminBikeService = () => {
                                                             style={{ width: '140px' }} 
                                                             value={statusForm.status} 
                                                             onChange={(e) => handleStatusChange(e, job)}
+                                                            disabled={isSubmitting}
                                                         >
                                                             <option value="Pending">Pending</option>
                                                             <option value="To Do">To Do</option>
@@ -173,11 +212,14 @@ const AdminBikeService = () => {
                                                             placeholder="Add remarks..." 
                                                             value={statusForm.adminNotes} 
                                                             onChange={(e) => setStatusForm({...statusForm, adminNotes: e.target.value})} 
+                                                            disabled={isSubmitting}
                                                         />
                                                         {!showInvoiceForm && (
-                                                            <button type="submit" className="btn btn-sm btn-success px-3 rounded-2 fw-bold small">Save Changes</button>
+                                                            <button type="submit" disabled={isSubmitting} className="btn btn-sm btn-success px-3 rounded-2 fw-bold small">
+                                                                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                                            </button>
                                                         )}
-                                                        <button type="button" className="btn btn-sm btn-secondary rounded-2" onClick={() => { setUpdatingJob(null); setShowInvoiceForm(false); }}>✕</button>
+                                                        <button type="button" className="btn btn-sm btn-secondary rounded-2" disabled={isSubmitting} onClick={() => { setUpdatingJob(null); setShowInvoiceForm(false); }}>✕</button>
                                                     </form>
 
                                                     {showInvoiceForm && (
@@ -194,26 +236,25 @@ const AdminBikeService = () => {
                                                                 </div>
                                                                 <div className="col-md-6">
                                                                     <label className="tiny font-monospace text-uppercase fw-bold text-muted d-block mb-1">Admin Handler Name</label>
-                                                                    <input type="text" className="form-control form-control-sm" value={invoiceForm.adminName} onChange={(e) => setInvoiceForm({...invoiceForm, adminName: e.target.value})} />
+                                                                    <input type="text" className="form-control form-control-sm" value={invoiceForm.adminName} onChange={(e) => setInvoiceForm({...invoiceForm, adminName: e.target.value})} disabled={isSubmitting} />
                                                                 </div>
                                                                 <div className="col-md-6">
                                                                     <label className="tiny font-monospace text-uppercase fw-bold text-muted d-block mb-1">Admin Email Space</label>
-                                                                    <input type="text" className="form-control form-control-sm" value={invoiceForm.adminEmail} onChange={(e) => setInvoiceForm({...invoiceForm, adminEmail: e.target.value})} />
+                                                                    <input type="text" className="form-control form-control-sm" value={invoiceForm.adminEmail} onChange={(e) => setInvoiceForm({...invoiceForm, adminEmail: e.target.value})} disabled={isSubmitting} />
                                                                 </div>
                                                                 <div className="col-md-6">
                                                                     <label className="tiny font-monospace text-uppercase fw-bold text-muted d-block mb-1">Admin Mobile</label>
-                                                                    <input type="text" className="form-control form-control-sm" value={invoiceForm.adminMobile} onChange={(e) => setInvoiceForm({...invoiceForm, adminMobile: e.target.value})} />
+                                                                    <input type="text" className="form-control form-control-sm" value={invoiceForm.adminMobile} onChange={(e) => setInvoiceForm({...invoiceForm, adminMobile: e.target.value})} disabled={isSubmitting} />
                                                                 </div>
                                                                 <div className="col-md-6">
                                                                     <label className="tiny font-monospace text-uppercase fw-bold text-muted d-block mb-1">Base Labor Service Amount</label>
-                                                                    <input type="number" className="form-control form-control-sm" value={invoiceForm.baseServiceAmount} onChange={(e) => setInvoiceForm({...invoiceForm, baseServiceAmount: e.target.value})} />
+                                                                    <input type="number" className="form-control form-control-sm" value={invoiceForm.baseServiceAmount} onChange={(e) => setInvoiceForm({...invoiceForm, baseServiceAmount: e.target.value})} disabled={isSubmitting} />
                                                                 </div>
 
-                                                                {/* Dynamic Dependant Additional Component Row Stack Node Mapping */}
                                                                 <div className="col-12 mt-2 border-top pt-2">
                                                                     <div className="d-flex align-items-center justify-content-between mb-2">
-                                                                        <span className="tiny font-monospace fw-bold text-secondary text-uppercase">Additional Spare Parts / Inventory Items Allocation</span>
-                                                                        <button type="button" onClick={handleAddProductRow} className="btn btn-xs btn-primary font-monospace py-0.5 px-2 small text-uppercase" style={{ fontSize: '11px' }}>
+                                                                        <span className="tiny font-monospace fw-bold text-secondary text-uppercase">Additional Spare Parts Allocation</span>
+                                                                        <button type="button" onClick={handleAddProductRow} disabled={isSubmitting} className="btn btn-xs btn-primary font-monospace py-0.5 px-2 small text-uppercase" style={{marginLeft:'2px', fontSize: '11px' }}>
                                                                             ➕
                                                                         </button>
                                                                     </div>
@@ -221,27 +262,52 @@ const AdminBikeService = () => {
                                                                     {invoiceForm.products.map((item, idx) => (
                                                                         <div className="row g-2 align-items-center mb-2" key={idx}>
                                                                             <div className="col-md-7">
-                                                                                <input type="text" className="form-control form-control-sm" placeholder="Product / Part Name (e.g. Break Fluid Oil)" value={item.name} onChange={(e) => handleProductRowChange(idx, 'name', e.target.value)} />
+                                                                                <input type="text" className="form-control form-control-sm" placeholder="Product / Part Name" value={item.name} onChange={(e) => handleProductRowChange(idx, 'name', e.target.value)} disabled={isSubmitting} />
                                                                             </div>
                                                                             <div className="col-md-3">
-                                                                                <input type="number" className="form-control form-control-sm" placeholder="Amount (₹)" value={item.amount} onChange={(e) => handleProductRowChange(idx, 'amount', e.target.value)} />
+                                                                                <input type="number" className="form-control form-control-sm" placeholder="Amount (₹)" value={item.amount} onChange={(e) => handleProductRowChange(idx, 'amount', e.target.value)} disabled={isSubmitting} />
                                                                             </div>
                                                                             <div className="col-md-2 text-center">
                                                                                 {invoiceForm.products.length > 1 && (
-                                                                                    <button type="button" onClick={() => handleRemoveProductRow(idx)} className="btn btn-sm btn-outline-danger py-1 px-2 border-0">✕</button>
+                                                                                    <button type="button" onClick={() => handleRemoveProductRow(idx)} disabled={isSubmitting} className="btn btn-sm btn-outline-danger py-1 px-2 border-0">✕</button>
                                                                                 )}
                                                                             </div>
                                                                         </div>
                                                                     ))}
                                                                 </div>
 
-                                                                <div className="col-md-6 offset-md-6">
-                                                                    <label className="tiny font-monospace text-uppercase fw-bold text-muted d-block mb-1">Discount Amount (-)</label>
-                                                                    <input type="number" className="form-control form-control-sm text-danger fw-bold" value={invoiceForm.discount} onChange={(e) => setInvoiceForm({...invoiceForm, discount: e.target.value})} />
+                                                                {/* CALCULATED PRICING PANEL BREAKDOWN TRAYS BLOCK */}
+                                                                <div className="col-md-6 offset-md-6 bg-light p-3 rounded border border-secondary-subtle">
+                                                                    <div className="d-flex justify-content-between mb-1 font-monospace small">
+                                                                        <span>Gross Total amount:</span>
+                                                                        <span className="fw-bold">₹{invoiceTotals.grossTotal}</span>
+                                                                    </div>
+                                                                    <div className="d-flex justify-content-between mb-1 font-monospace small text-danger">
+                                                                        <span>Discount (10% Applied):</span>
+                                                                        <span className="fw-bold">- ₹{invoiceTotals.discount}</span>
+                                                                    </div>
+                                                                    <hr className="my-1"/>
+                                                                    <div className="d-flex justify-content-between font-monospace text-success fw-bold">
+                                                                        <span>Final total payable:</span>
+                                                                        <span>₹{invoiceTotals.finalTotal}</span>
+                                                                    </div>
                                                                 </div>
+
                                                                 <div className="col-12 text-end mt-3 border-top pt-2">
-                                                                    <button type="button" onClick={(e) => handleUpdateStatusSubmit(e, job._id)} className="btn btn-sm btn-success px-4 fw-bold font-monospace">
-                                                                        ✔ Finalize Done State & Invoice
+                                                                    <button 
+                                                                        type="button" 
+                                                                        onClick={(e) => handleUpdateStatusSubmit(e, job._id)} 
+                                                                        className="btn btn-sm btn-success px-4 fw-bold font-monospace"
+                                                                        disabled={isSubmitting}
+                                                                    >
+                                                                        {isSubmitting ? (
+                                                                            <>
+                                                                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                                                TRANSMITTING INVOICE...
+                                                                            </>
+                                                                        ) : (
+                                                                            '✔ Finalize Done State & Invoice'
+                                                                        )}
                                                                     </button>
                                                                 </div>
                                                             </div>
