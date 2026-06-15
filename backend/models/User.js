@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Strict alphanumeric user validation regex structures
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const UserSchema = new mongoose.Schema({
@@ -25,6 +24,18 @@ const UserSchema = new mongoose.Schema({
         type: String, 
         enum: ['user', 'admin'], 
         default: 'user' 
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    otp: {
+        type: String,
+        default: null
+    },
+    otpExpires: {
+        type: Date,
+        default: null
     }
 }, { timestamps: true });
 
