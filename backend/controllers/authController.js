@@ -199,3 +199,42 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({ message: "Internal server compilation logic error.", error: err.message });
     }
 };
+
+// @desc    Update specific standard authenticated customer account workspace properties
+// @route   PUT /api/auth/profile/:id
+exports.updateUserProfile = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { name, phone, bikeModel, profileImage } = req.body;
+
+        // Ensure user account entity target path maps correctly
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Identity schema node target trace not found." });
+        }
+
+        // Apply properties alterations
+        if (name) user.name = name;
+        user.phone = phone || user.phone;
+        user.bikeModel = bikeModel || user.bikeModel;
+        user.profileImage = profileImage || user.profileImage;
+
+        await user.save();
+
+        res.status(200).json({
+            message: "User context layout metadata refreshed successfully.",
+            user: {
+                id: user._id,
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                phone: user.phone,
+                bikeModel: user.bikeModel,
+                profileImage: user.profileImage
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Internal server execution fault mapping alterations.", error: err.message });
+    }
+};

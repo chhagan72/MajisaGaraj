@@ -4,19 +4,17 @@ import Sidebar from '../usernavbar/Sidebar';
 import TopNavbar from '../usernavbar/TopNavbar';
 import TwoWheelerCare from './TwoWheelerCare';
 import NotificationCenter from './NotificationCenter'; 
+import UserProfile from './UserProfile'; 
 import '../css/UserHome.css';
 
 const UserHome = () => {
     const navigate = useNavigate();
     
-    /* FIX 1: Map the state hook parser engine to read the exact '_id' or 'id' key signature 
-       returned from your MongoDB collection documents to prevent 'undefined' API route paths */
     const [user, setUser] = useState(() => {
         const cachedUser = localStorage.getItem('user_data');
         return cachedUser ? JSON.parse(cachedUser) : { name: 'Operator', _id: '', id: '' };
     });
     
-    // UI Interface Control States
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('Overview');
 
@@ -33,10 +31,22 @@ const UserHome = () => {
         }
     }, [navigate]);
 
+    const handleProfileSync = (updatedUserFields) => {
+        const structuralUserData = { ...user, ...updatedUserFields };
+        setUser(structuralUserData);
+        localStorage.setItem('user_data', JSON.stringify(structuralUserData));
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('user_token');
         localStorage.removeItem('user_data');
         navigate('/login');
+    };
+
+    // Debugging handler to log exactly what's breaking in the rendering lifecycle
+    const handleTabChange = (tabName) => {
+        console.log(`%c [SYSTEM NODE] Switching Active Workstation State to: ${tabName}`, "color: #0d6efd; font-weight: bold;");
+        setActiveTab(tabName);
     };
 
     const targetUserId = user._id || user.id;
@@ -44,39 +54,35 @@ const UserHome = () => {
     return (
         <div className="dashboard-root d-flex">
             
-            {/* 1. SEPARATED SIDEBAR VIEW */}
             <Sidebar 
                 sidebarOpen={sidebarOpen} 
                 setSidebarOpen={setSidebarOpen} 
                 activeTab={activeTab} 
-                setActiveTab={setActiveTab} 
+                setActiveTab={handleTabChange} 
                 handleLogout={handleLogout} 
             />
 
-            {/* MAIN CONTENT SPACE */}
             <div className="main-content-wrapper flex-grow-1 min-vh-100 d-flex flex-column">
                 
-                {/* 2. SEPARATED TOP NAVBAR VIEW */}
                 <TopNavbar 
                     sidebarOpen={sidebarOpen} 
                     setSidebarOpen={setSidebarOpen} 
                     user={user} 
                     handleLogout={handleLogout} 
-                    setActiveTab={setActiveTab}
+                    setActiveTab={handleTabChange}
                 />
 
-                {/* 3. DISPLAY SPACE PLATFORM LAYOUT */}
-                <main className="dashboard-body-content p-4 flex-grow-1 animate-fade-in-view">
+                <main className="dashboard-body-content p-4 flex-grow-1">
                     <div className="d-flex align-items-center justify-content-between mb-4 header-container">
-                        <h2 className="section-title m-0">
-                            {activeTab === 'Notifications' ? 'Notification Logs' : `${activeTab} Workstation`}
+                        <h2 className="section-title m-0 font-monospace text-uppercase">
+                            {activeTab === 'Notifications' ? 'Notification Logs' : activeTab === 'Profile' ? 'User Profile Workspace' : `${activeTab} Workstation`}
                         </h2>
                         <span className="system-status-badge font-monospace small">SYS_STATUS: OPERATIONAL</span>
                     </div>
 
-                    {/* Context Router Tab Mappings */}
+                    {/* Conditional Workstation Engine Layouts */}
                     {activeTab === 'Overview' && (
-                        <div className="row g-4">
+                        <div className="row g-4 animate-fade-in-view">
                             <div className="col-12 col-md-6 col-xl-4">
                                 <div className="metric-panel-card p-4">
                                     <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
@@ -116,16 +122,20 @@ const UserHome = () => {
                         <TwoWheelerCare />
                     )}
 
-                    {/* FIX 2: Pass secure identifier context safely down into the layer bounds */}
                     {activeTab === 'Notifications' && targetUserId && (
                         <NotificationCenter roleContext="user" userIdContext={targetUserId} />
                     )}
 
-                    {/* Fallback layout card boundary checks */}
-                    {activeTab !== 'Overview' && activeTab !== 'BikeService' && activeTab !== 'Notifications' && (
-                        <div className="metric-panel-card p-5 text-center animate-pulse-slow">
+                    {/* RENDER ANCHOR BLOCK */}
+                    {activeTab === 'Profile' && (
+                        <UserProfile user={user} onUserUpdate={handleProfileSync} />
+                    )}
+
+                    {/* ISOLATED FALLBACK EXCEPTION LAYER */}
+                    {activeTab !== 'Overview' && activeTab !== 'BikeService' && activeTab !== 'Notifications' && activeTab !== 'Profile' && (
+                        <div className="metric-panel-card p-5 text-center">
                             <h4 className="font-monospace text-muted mb-2">[ LAYER SECURED ]</h4>
-                            <p className="m-0 text-muted-gray small">The component window for "{activeTab}" is configured and awaiting remote payload deployment loops.</p>
+                            <p className="m-0 text-muted-gray small">The component window for "{activeTab}" is configured and awaiting data loops.</p>
                         </div>
                     )}
                 </main>
