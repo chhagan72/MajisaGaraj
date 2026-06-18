@@ -205,19 +205,23 @@ exports.changePassword = async (req, res) => {
 exports.updateUserProfile = async (req, res) => {
     try {
         const userId = req.params.id;
-        const { name, phone, bikeModel, profileImage } = req.body;
+        
+        // ADDED: vehicleNumber and fuelType to the destructuring assignment block from req.body
+        const { name, phone, bikeModel, profileImage, address, vehicleNumber, fuelType } = req.body;
 
-        // Ensure user account entity target path maps correctly
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "Identity schema node target trace not found." });
         }
 
-        // Apply properties alterations
+        // Apply property mutations safely
         if (name) user.name = name;
         user.phone = phone || user.phone;
         user.bikeModel = bikeModel || user.bikeModel;
         user.profileImage = profileImage || user.profileImage;
+        user.address = address || user.address;
+        user.vehicleNumber = vehicleNumber || user.vehicleNumber; // Integrated property
+        user.fuelType = fuelType || user.fuelType;               // Integrated property
 
         await user.save();
 
@@ -231,7 +235,10 @@ exports.updateUserProfile = async (req, res) => {
                 role: user.role,
                 phone: user.phone,
                 bikeModel: user.bikeModel,
-                profileImage: user.profileImage
+                profileImage: user.profileImage,
+                address: user.address,
+                vehicleNumber: user.vehicleNumber, // Sent to frontend state
+                fuelType: user.fuelType           // Sent to frontend state
             }
         });
     } catch (err) {

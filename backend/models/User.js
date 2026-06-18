@@ -36,6 +36,31 @@ const UserSchema = new mongoose.Schema({
     otpExpires: {
         type: Date,
         default: null
+    },
+    phone: {
+        type: String,
+        default: ''
+    },
+    bikeModel: {
+        type: String,
+        default: ''
+    },
+    vehicleNumber: {
+        type: String,
+        default: ''
+    },
+    fuelType: {
+        type: String,
+        enum: ['Petrol', 'Diesel', 'EV', 'CNG'],
+        default: 'Petrol'
+    },
+    address: {
+        type: String,
+        default: ''
+    },
+    profileImage: {
+        type: String, // Stores the Base64 image data string directly
+        default: ''
     }
 }, { timestamps: true });
 

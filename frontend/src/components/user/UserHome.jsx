@@ -43,12 +43,6 @@ const UserHome = () => {
         navigate('/login');
     };
 
-    // Debugging handler to log exactly what's breaking in the rendering lifecycle
-    const handleTabChange = (tabName) => {
-        console.log(`%c [SYSTEM NODE] Switching Active Workstation State to: ${tabName}`, "color: #0d6efd; font-weight: bold;");
-        setActiveTab(tabName);
-    };
-
     const targetUserId = user._id || user.id;
 
     return (
@@ -58,7 +52,7 @@ const UserHome = () => {
                 sidebarOpen={sidebarOpen} 
                 setSidebarOpen={setSidebarOpen} 
                 activeTab={activeTab} 
-                setActiveTab={handleTabChange} 
+                setActiveTab={setActiveTab} 
                 handleLogout={handleLogout} 
             />
 
@@ -69,18 +63,18 @@ const UserHome = () => {
                     setSidebarOpen={setSidebarOpen} 
                     user={user} 
                     handleLogout={handleLogout} 
-                    setActiveTab={handleTabChange}
+                    setActiveTab={setActiveTab}
                 />
 
                 <main className="dashboard-body-content p-4 flex-grow-1">
                     <div className="d-flex align-items-center justify-content-between mb-4 header-container">
-                        <h2 className="section-title m-0 font-monospace text-uppercase">
-                            {activeTab === 'Notifications' ? 'Notification Logs' : activeTab === 'Profile' ? 'User Profile Workspace' : `${activeTab} Workstation`}
+                        <h2 className="section-title m-0 font-monospace text-uppercase text-dark">
+                            {activeTab === 'Notifications' ? 'Notification Logs' : activeTab === 'Profile' ? 'User Profile' : `${activeTab} Workstation`}
                         </h2>
                         <span className="system-status-badge font-monospace small">SYS_STATUS: OPERATIONAL</span>
                     </div>
 
-                    {/* Conditional Workstation Engine Layouts */}
+                    {/* Rendering Mappings */}
                     {activeTab === 'Overview' && (
                         <div className="row g-4 animate-fade-in-view">
                             <div className="col-12 col-md-6 col-xl-4">
@@ -126,16 +120,16 @@ const UserHome = () => {
                         <NotificationCenter roleContext="user" userIdContext={targetUserId} />
                     )}
 
-                    {/* RENDER ANCHOR BLOCK */}
+                    {/* TARGET PROFILE COMPONENT INTERFACE DISPLAY SWITCH */}
                     {activeTab === 'Profile' && (
                         <UserProfile user={user} onUserUpdate={handleProfileSync} />
                     )}
 
-                    {/* ISOLATED FALLBACK EXCEPTION LAYER */}
+                    {/* FIXED: Excluded 'Profile' layout explicitly from standard fallback conditions */}
                     {activeTab !== 'Overview' && activeTab !== 'BikeService' && activeTab !== 'Notifications' && activeTab !== 'Profile' && (
                         <div className="metric-panel-card p-5 text-center">
                             <h4 className="font-monospace text-muted mb-2">[ LAYER SECURED ]</h4>
-                            <p className="m-0 text-muted-gray small">The component window for "{activeTab}" is configured and awaiting data loops.</p>
+                            <p className="m-0 text-muted-gray small">The component window for "{activeTab}" is configured and awaiting remote data payload deployment loops.</p>
                         </div>
                     )}
                 </main>

@@ -46,7 +46,7 @@ const TopNavbar = ({ sidebarOpen, setSidebarOpen, user, handleLogout, setActiveT
                 {/* Alerts Section */}
                 <div className="dropdown">
                     <button 
-                        className="utility-badge-btn font-monospace dropdown-toggle position-relative" 
+                        className="utility-badge-btn font-monospace position-relative" 
                         type="button" 
                         id="alertsMenu" 
                         data-bs-toggle="dropdown" 
@@ -56,32 +56,11 @@ const TopNavbar = ({ sidebarOpen, setSidebarOpen, user, handleLogout, setActiveT
                         🔔 ALERTS
                         {unreadAlerts.length > 0 && <span className="matrix-counter-dot alert-pulse">{unreadAlerts.length}</span>}
                     </button>
-                    <ul className="dropdown-menu dropdown-menu-end profile-custom-dropdown p-2" aria-labelledby="alertsMenu" style={{ width: '320px', maxHeight: '400px', overflowY: 'auto' }}>
-                        <li className="dropdown-header font-monospace small text-muted d-flex justify-content-between align-items-center py-2">
-                            <span>LIVE REPAIR NOTIFICATIONS</span>
-                            <button className="btn btn-link p-0 small font-monospace text-primary text-decoration-none fw-bold" onClick={() => setActiveTab('Notifications')}>
-                                View All
-                            </button>
-                        </li>
-                        <li><hr className="dropdown-divider m-1"/></li>
-                        {unreadAlerts.length === 0 ? (
-                            <li className="p-2 text-center text-muted small">No new workflow notifications present.</li>
-                        ) : (
-                            unreadAlerts.slice(0, 5).map((alert) => (
-                                <li key={alert._id} className="p-2 border-bottom border-light" onClick={() => setActiveTab('Notifications')} style={{ cursor: 'pointer' }}>
-                                    <div className="small text-dark fw-bold m-0">{alert.message}</div>
-                                    <small className="text-muted font-monospace" style={{ fontSize: '0.75rem' }}>
-                                        Phase: <span className="text-primary">{alert.title}</span>
-                                    </small>
-                                </li>
-                            ))
-                        )}
-                    </ul>
                 </div>
 
                 {/* Profile Section */}
                 <div className="dropdown">
-                    <button className="btn profile-badge-dropdown dropdown-toggle d-flex align-items-center gap-2" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button className="btn profile-badge-dropdown d-flex align-items-center gap-2" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false" onClick={() => setActiveTab('Profile')}>
                         {user.profileImage ? (
                             <img 
                                 src={user.profileImage} 
@@ -94,25 +73,6 @@ const TopNavbar = ({ sidebarOpen, setSidebarOpen, user, handleLogout, setActiveT
                         )}
                         <span className="user-name-text small font-monospace">{user.name}</span>
                     </button>
-                    <ul className="dropdown-menu dropdown-menu-end profile-custom-dropdown" aria-labelledby="profileMenu">
-                        <li className="dropdown-header font-monospace small text-muted">ACCESS: SUBSCRIBER</li>
-                        <li><hr className="dropdown-divider m-1"/></li>
-                        <li>
-                            {/* Explicit functional button completely bypassing dangerous href anchor triggers */}
-                            <button 
-                                type="button" 
-                                className="dropdown-item text-start font-monospace small" 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setActiveTab('Profile');
-                                }}
-                            >
-                                Account Settings
-                            </button>
-                        </li>
-                        <li><hr className="dropdown-divider m-1"/></li>
-                        <li><button type="button" className="dropdown-item text-danger text-start font-monospace small" onClick={handleLogout}>Log Out</button></li>
-                    </ul>
                 </div>
             </div>
         </header>
