@@ -27,6 +27,7 @@ app.use(cors());
 // Modular API Base Endpoint Routing
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/auth', require('./routes/ticketRoutes'));
 app.use('/api/services', require('./routes/serviceRoutes'));
 
 const PORT = process.env.PORT || 5000;

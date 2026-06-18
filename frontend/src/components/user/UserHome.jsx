@@ -5,6 +5,8 @@ import TopNavbar from '../usernavbar/TopNavbar';
 import TwoWheelerCare from './TwoWheelerCare';
 import NotificationCenter from './NotificationCenter'; 
 import UserProfile from './UserProfile'; 
+import AboutCorporate from './AboutCorporate';
+import GetInTouch from './GetInTouch';
 import '../css/UserHome.css';
 
 const UserHome = () => {
@@ -125,8 +127,16 @@ const UserHome = () => {
                         <UserProfile user={user} onUserUpdate={handleProfileSync} />
                     )}
 
+                    {activeTab === 'About' && (
+                        <AboutCorporate />
+                    )}
+
+                    {activeTab === 'Contact' && (
+                        <GetInTouch />
+                    )}
+
                     {/* FIXED: Excluded 'Profile' layout explicitly from standard fallback conditions */}
-                    {activeTab !== 'Overview' && activeTab !== 'BikeService' && activeTab !== 'Notifications' && activeTab !== 'Profile' && (
+                    {activeTab !== 'Overview' && activeTab !== 'BikeService' && activeTab !== 'Notifications' && activeTab !== 'Profile' &&  activeTab !== 'About' && activeTab !== 'Contact' &&(
                         <div className="metric-panel-card p-5 text-center">
                             <h4 className="font-monospace text-muted mb-2">[ LAYER SECURED ]</h4>
                             <p className="m-0 text-muted-gray small">The component window for "{activeTab}" is configured and awaiting remote data payload deployment loops.</p>
