@@ -69,3 +69,35 @@ exports.deleteProduct = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// 5. Append User Review entry to a designated Product Profile
+exports.addProductReview = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { userName, rating, comment } = req.body;
+
+        if (!rating || !comment) {
+            return res.status(400).json({ error: 'Rating metrics and comment review are mandatory.' });
+        }
+
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ error: 'Product catalog index not found.' });
+        }
+
+        // Push review payload structure inside document schema array
+        product.reviews.push({
+            userName: userName || 'Anonymous Customer',
+            rating: Number(rating),
+            comment: comment.trim()
+        });
+
+        await product.save();
+        res.status(201).json({ 
+            message: 'Feedback log updated successfully.', 
+            reviews: product.reviews 
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

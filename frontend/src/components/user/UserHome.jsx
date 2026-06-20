@@ -7,6 +7,7 @@ import NotificationCenter from './NotificationCenter';
 import UserProfile from './UserProfile'; 
 import AboutCorporate from './AboutCorporate';
 import GetInTouch from './GetInTouch';
+import PartsInventory from './PartsInventory';
 import '../css/UserHome.css';
 
 const UserHome = () => {
@@ -70,46 +71,55 @@ const UserHome = () => {
 
                 <main className="dashboard-body-content p-4 flex-grow-1">
                     <div className="d-flex align-items-center justify-content-between mb-4 header-container">
-                        <h2 className="section-title m-0 font-monospace text-uppercase text-dark">
+                        {/* <h2 className="section-title m-0 font-monospace text-uppercase text-dark">
                             {activeTab === 'Notifications' ? 'Notification Logs' : activeTab === 'Profile' ? 'User Profile' : `${activeTab} Workstation`}
-                        </h2>
-                        <span className="system-status-badge font-monospace small">SYS_STATUS: OPERATIONAL</span>
+                        </h2> */}
+                        {/* <span className="system-status-badge font-monospace small">SYS_STATUS: OPERATIONAL</span> */}
                     </div>
 
                     {/* Rendering Mappings */}
                     {activeTab === 'Overview' && (
-                        <div className="row g-4 animate-fade-in-view">
-                            <div className="col-12 col-md-6 col-xl-4">
-                                <div className="metric-panel-card p-4">
-                                    <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
-                                        <span className="text-muted small font-monospace">01 TRACKING SLOT</span>
-                                        <span className="card-icon-badge text-cyan-icon">🚗</span>
+                        <div className="d-flex flex-column gap-4 animate-fade-in-view">
+                            {/* TOP COMPACT METRIC STATUS PANEL CARD ROWS */}
+                            {/* <div className="row g-4">
+                                <div className="col-12 col-md-6 col-xl-4">
+                                    <div className="metric-panel-card p-4">
+                                        <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
+                                            <span className="text-muted small font-monospace">01 TRACKING SLOT</span>
+                                            <span className="card-icon-badge text-cyan-icon">🚗</span>
+                                        </div>
+                                        <h2 className="fw-bold value-display m-0">1 Active Servicing</h2>
+                                        <p className="card-mini-footer mt-2 text-grey m-0">Car Periodic Servicing Routine</p>
                                     </div>
-                                    <h2 className="fw-bold value-display m-0">1 Active Servicing</h2>
-                                    <p className="card-mini-footer mt-2 text-grey m-0">Car Periodic Servicing Routine</p>
                                 </div>
-                            </div>
-                            
-                            <div className="col-12 col-md-6 col-xl-4">
-                                <div className="metric-panel-card p-4">
-                                    <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
-                                        <span className="text-muted small font-monospace">02 CREDIT TRANSACTIONS</span>
-                                        <span className="card-icon-badge text-emerald-icon">💳</span>
+                                
+                                <div className="col-12 col-md-6 col-xl-4">
+                                    <div className="metric-panel-card p-4">
+                                        <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
+                                            <span className="text-muted small font-monospace">02 CREDIT TRANSACTIONS</span>
+                                            <span className="card-icon-badge text-emerald-icon">💳</span>
+                                        </div>
+                                        <h2 className="fw-bold value-display m-0">$240.00 Paid</h2>
+                                        <p className="card-mini-footer mt-2 text-grey m-0">Invoice closed on May 2026</p>
                                     </div>
-                                    <h2 className="fw-bold value-display m-0">$240.00 Paid</h2>
-                                    <p className="card-mini-footer mt-2 text-grey m-0">Invoice closed on May 2026</p>
                                 </div>
-                            </div>
 
-                            <div className="col-12 col-xl-4">
-                                <div className="metric-panel-card p-4">
-                                    <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
-                                        <span className="text-muted small font-monospace">03 LIVE TIMELINE</span>
-                                        <span className="card-icon-badge text-amber-icon">⌛</span>
+                                <div className="col-12 col-xl-4">
+                                    <div className="metric-panel-card p-4">
+                                        <div className="card-top-info d-flex justify-content-between align-items-center mb-3">
+                                            <span className="text-muted small font-monospace">03 LIVE TIMELINE</span>
+                                            <span className="card-icon-badge text-amber-icon">⌛</span>
+                                        </div>
+                                        <h2 className="fw-bold value-display text-glow-amber m-0">In Progress</h2>
+                                        <p className="card-mini-footer mt-2 text-grey m-0">Estimated Completion: 5:00 PM Today</p>
                                     </div>
-                                    <h2 className="fw-bold value-display text-glow-amber m-0">In Progress</h2>
-                                    <p className="card-mini-footer mt-2 text-grey m-0">Estimated Completion: 5:00 PM Today</p>
                                 </div>
+                            </div> */}
+
+                            {/* INTEGRATED LIVE ACTIVE HARDWARE PARTS & ACCESORIES INVENTORY CATALOG HIERARCHY */}
+                            <div className="border-top pt-4">
+                                <h4 className="font-monospace fw-bold text-dark mb-3">🛒 Active Parts & Accessories Hub</h4>
+                                <PartsInventory currentUser={user} />
                             </div>
                         </div>
                     )}
