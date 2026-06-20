@@ -16,11 +16,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab, handleL
                 <ul className="list-unstyled d-flex flex-column gap-1 m-0 p-0">
                     <li>
                         <button className={`nav-panel-btn ${activeTab === 'Overview' ? 'active' : ''}`} onClick={() => setActiveTab('Overview')}>
-                            <span className="icon-slot">📊</span> Dashboard Overview
-                        </button>
-                    </li>
-                    <li>
-                        <button className={`nav-panel-btn ${activeTab === 'Products' ? 'active' : ''}`} onClick={() => setActiveTab('Products')}>
                             <span className="icon-slot">📦</span> Parts Inventory
                         </button>
                     </li>

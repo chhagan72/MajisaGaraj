@@ -4,6 +4,8 @@ import AdminSidebar from '../adminnavbar/AdminSidebar';
 import AdminTopNavbar from '../adminnavbar/AdminTopNavbar';
 import AdminBikeService from './AdminBikeService'; 
 import NotificationCenter from './NotificationCenter'; 
+import AddProduct from './AddProduct';
+import ManageProducts from './ManageProducts';
 import '../css/AdminHome.css';
 
 const AdminHome = () => {
@@ -109,12 +111,13 @@ const AdminHome = () => {
 
                     {/* MOUNT SUB-PAGE COMPONENTS ACCORDING TO STATE TAB NODES */}
                     {activeTab === 'BikeService' && <AdminBikeService />}
-
+                    {activeTab === 'AddProduct' && <AddProduct />}
+                    {activeTab === 'ManageProducts' && <ManageProducts />}
                     {/* MOUNT NOTIFICATION CENTER COMPONENT SAFELY */}
                     {activeTab === 'Notifications' && <NotificationCenter roleContext="admin" />}
 
                     {/* Included activeTab !== 'Notifications' check block condition wrapper */}
-                    {activeTab !== 'Overview' && activeTab !== 'BikeService' && activeTab !== 'Notifications' && (
+                    {activeTab !== 'Overview' && activeTab !== 'BikeService' && activeTab !== 'Notifications' && activeTab !== 'AddProduct' && activeTab !== 'ManageProducts' &&(
                         <div className="metric-panel-card p-5 text-center bg-white border">
                             <h4 className="font-monospace text-muted mb-2">[ SECURE PORT OFFLINE ]</h4>
                             <p className="m-0 text-muted-gray small">
