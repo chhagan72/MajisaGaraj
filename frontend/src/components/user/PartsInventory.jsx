@@ -12,8 +12,6 @@ const PartsInventory = ({ currentUser }) => {
     const [actionStatus, setActionStatus] = useState({ type: '', text: '' });
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [toastMessage, setToastMessage] = useState('');
-    
-    // NEW: Search engine query state tracker variable
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -30,6 +28,16 @@ const PartsInventory = ({ currentUser }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // NEW: Helper function to calculate Overall Average Rating and count dynamically
+    const getProductRatingMetrics = (reviews) => {
+        if (!reviews || reviews.length === 0) {
+            return { average: 0, count: 0 };
+        }
+        const totalScore = reviews.reduce((sum, rev) => sum + rev.rating, 0);
+        const averageScore = (totalScore / reviews.length).toFixed(1);
+        return { average: parseFloat(averageScore), count: reviews.length };
     };
 
     const triggerToast = (msg) => {
@@ -92,7 +100,6 @@ const PartsInventory = ({ currentUser }) => {
         }
     };
 
-    // NEW: Real-time calculation matrix to compute search filters instantly
     const filteredProducts = products.filter((product) => {
         const titleMatch = product.title?.toLowerCase().includes(searchQuery.toLowerCase());
         const detailsMatch = product.details?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -121,7 +128,7 @@ const PartsInventory = ({ currentUser }) => {
             {/* VIEW MODE 1: GRID GALLERY CARDS OVERVIEW */}
             {viewMode === 'list' && (
                 <>
-                    {/* NEW: E-COMMERCE STYLE INTERACTIVE PRODUCT SEARCH INPUT BAR */}
+                    {/* E-COMMERCE STYLE INTERACTIVE PRODUCT SEARCH INPUT BAR */}
                     <div className="mb-4">
                         <div className="input-group shadow-sm border rounded overflow-hidden">
                             <span className="input-group-text bg-white border-0 text-muted fs-5">🔍</span>
@@ -160,6 +167,9 @@ const PartsInventory = ({ currentUser }) => {
                                     ? product.price - (product.price * (product.discount / 100))
                                     : product.price;
 
+                                // Extract live rating calculations for card
+                                const ratingMetrics = getProductRatingMetrics(product.reviews);
+
                                 return (
                                     <div className="col-12 col-sm-6 col-md-4 col-xl-3" key={product._id}>
                                         <div className="fk-product-card d-flex flex-column h-100 bg-white position-relative" onClick={() => handleOpenDetails(product)}>
@@ -182,6 +192,20 @@ const PartsInventory = ({ currentUser }) => {
                                                 <div className="fk-category text-uppercase font-monospace text-muted mb-1">{product.category}</div>
                                                 <h6 className="fk-title text-dark fw-bold mb-1" title={product.title}>{product.title}</h6>
                                                 <div className="fk-specs-text text-muted small mb-2">{product.details}</div>
+
+                                                {/* Flipkart-Style Rating Summary Row */}
+                                                <div className="d-flex align-items-center gap-2 mb-2 font-monospace">
+                                                    {ratingMetrics.count > 0 ? (
+                                                        <>
+                                                            <span className="badge bg-success px-2 py-1 small d-flex align-items-center gap-1">
+                                                                {ratingMetrics.average} ★
+                                                            </span>
+                                                            <span className="text-muted small">({ratingMetrics.count} Ratings)</span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-muted text-mini italic">[ No ratings yet ]</span>
+                                                    )}
+                                                </div>
 
                                                 <div className="fk-stock-status mb-2 font-monospace">
                                                     {product.stock === 0 ? (
@@ -275,7 +299,23 @@ const PartsInventory = ({ currentUser }) => {
                         {/* Right Side: Primary Info Metrics panel */}
                         <div className="col-12 col-md-7 d-flex flex-column">
                             <h3 className="fw-bold text-dark mb-1">{selectedProduct.title}</h3>
-                            <p className="font-monospace text-muted small mb-3">{selectedProduct.details}</p>
+                            <p className="font-monospace text-muted small mb-2">{selectedProduct.details}</p>
+
+                            {/* Standalone Detail Page Overall Rating Header Metrics Panel */}
+                            <div className="d-flex align-items-center gap-2 mb-3 font-monospace">
+                                {getProductRatingMetrics(selectedProduct.reviews).count > 0 ? (
+                                    <>
+                                        <span className="badge bg-success px-2.5 py-1.5 fs-6 d-flex align-items-center gap-1">
+                                            {getProductRatingMetrics(selectedProduct.reviews).average} ★
+                                        </span>
+                                        <span className="text-secondary fw-bold small">
+                                            {getProductRatingMetrics(selectedProduct.reviews).count} Authenticated Customer Reviews
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-muted small italic">⭐ No metrics compiled yet</span>
+                                )}
+                            </div>
 
                             {/* Live Pricing Matrix Field */}
                             <div className="d-flex align-items-baseline gap-3 p-3 bg-light rounded-3 mb-4">
@@ -309,15 +349,15 @@ const PartsInventory = ({ currentUser }) => {
                             {/* Landing View Primary Interaction Rows Footer */}
                             <div className="d-flex gap-3 mt-auto pt-3 border-top">
                                 <button className="btn fk-btn-cart py-3 px-4 font-monospace fw-bold fs-6 flex-grow-1" onClick={(e) => handleAddToCart(selectedProduct, e)} disabled={selectedProduct.stock === 0}>
-                                    🛒 ADD TO CART WORKSPACE
+                                    🛒 ADD TO CART
                                 </button>
                                 <button className="btn fk-btn-buy py-3 px-4 font-monospace fw-bold fs-6 flex-grow-1" onClick={(e) => handleInstantBuy(selectedProduct, e)} disabled={selectedProduct.stock === 0}>
-                                    ⚡ PROCEED TO INSTANT BUY
+                                    ⚡ BUY
                                 </button>
                             </div>
                         </div>
 
-                        {/* Bottom: Customer Reviews Submit and Output Log Array */}
+                        {/* Bottom: Customer Reviews Submission and Output Log Array */}
                         <div className="col-12 border-top mt-5 pt-4">
                             <h4 className="fw-bold text-dark font-monospace mb-4">⭐ Customer Feedback Portfolio Logs</h4>
                             
@@ -335,7 +375,7 @@ const PartsInventory = ({ currentUser }) => {
                                         <div className="mb-3">
                                             <label className="text-mini text-muted fw-bold d-block mb-1">SCORE METRIC</label>
                                             <select className="form-select form-select-sm" value={reviewForm.rating} onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })}>
-                                                <option value="5">⭐⭐⭐⭐ Bakup (5/5)</option>
+                                                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
                                                 <option value="4">⭐⭐⭐⭐ (4/5)</option>
                                                 <option value="3">⭐⭐⭐ (3/5)</option>
                                                 <option value="2">⭐⭐ (2/5)</option>
@@ -348,7 +388,7 @@ const PartsInventory = ({ currentUser }) => {
                                             <textarea rows="3" className="form-control form-control-sm" placeholder="Describe quality performance, fitment precision benchmarks..." value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} required></textarea>
                                         </div>
 
-                                        <button type="submit" className="btn btn-dark btn-sm w-100 fw-bold py-2">SUBMIT REVIEW MATRIX</button>
+                                        <button type="submit" className="btn btn-dark btn-sm w-100 fw-bold py-2">SUBMIT REVIEW</button>
                                     </form>
                                 </div>
 
